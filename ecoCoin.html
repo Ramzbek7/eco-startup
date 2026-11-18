@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="theme-color" content="#0b3d2c">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg">
+<title>EkoCoin — Ekologik platforma</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root {
+  --bg: #f3faf4; --text: #13261a; --muted: #56705c; --head: #0b3d2c;
+  --green: #1f8a4c; --lime: #a3e635; --teal: #14b8a6; --card: #ffffff;
+  --line: #cfe8d5; --input: #f7fdf8; --soft: #ecfccb; --nav: #0b3d2c;
+}
+:root[data-theme="dark"] {
+  --bg: #0c1d15; --text: #e6f5ea; --muted: #9bbfa6; --head: #bfe9cc;
+  --card: #132a1f; --line: #24513a; --input: #0f2319; --soft: #1d3b2a;
+}
+* {
+     margin: 0; padding: 0; box-sizing: border-box; 
+}
+html {
+     scroll-behavior: smooth; 
+}
+body { 
+     font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+     background: var(--bg);
+     color: var(--text);
+     line-height: 1.6;
+}
+.wrap {
+     max-width: 1080px;
+     margin: 0 auto;
+     padding: 0 1.25rem;
+ }
+.lite { padding-bottom: calc(3.2rem + 10px); }
+
+nav { position: sticky; top: 0; z-index: 1000; background: var(--nav); color: #e8fbe9; }
+nav .wrap { display: flex; justify-content: space-between; align-items: center; gap: .8rem; min-height: 58px; padding-top: .5rem; padding-bottom: .5rem; }
+nav .logo { font-weight: 800; font-size: 1.1rem; color: var(--lime); flex-shrink: 0; }
+nav .links { display: flex; gap: .9rem; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; justify-content: center; }
+nav .links::-webkit-scrollbar { display: none; }
+nav .links a { color: #bfe9cc; text-decoration: none; font-size: .9rem; white-space: nowrap; }
+nav .links a:hover { color: var(--lime); }
+.tools { display: flex; gap: .5rem; align-items: center; flex-shrink: 0; }
+.tools select { width: auto; padding: .3rem .5rem; font-size: .85rem; }
+.tools button { margin: 0; width: auto; padding: .35rem .7rem; font-size: .85rem; }
+
+@media (max-width: 860px) {
+  nav .wrap { flex-wrap: wrap; }
+  nav .links { order: 3; width: 100%; justify-content: flex-start; padding-bottom: .3rem; }
+}
+
+.hero { background: linear-gradient(135deg, #0b3d2c 0%, #1f8a4c 55%, #14b8a6 100%); color: #f0fff4; padding: 4rem 0 3.5rem; text-align: center; }
+.badge { display: inline-block; padding: .35rem .95rem; border-radius: 999px; background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.3); font-size: .85rem; font-weight: 600; }
+.hero h1 { font-size: clamp(2.2rem, 6vw, 3.4rem); letter-spacing: -.03em; margin: 1rem 0 .5rem; }
+.hero .sub { max-width: 38rem; margin: 0 auto; opacity: .9; }
+.balance { display: inline-block; margin-top: 1.8rem; background: var(--lime); color: #0b3d2c; padding: .9rem 2.2rem; border-radius: 18px; font-size: 1.8rem; font-weight: 800; }
+
+section { padding: 3.2rem 0; }
+.eyebrow { color: var(--green); font-size: .8rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; margin-top: 30px; }
+h2 { font-size: clamp(1.6rem, 3.5vw, 2.1rem); letter-spacing: -.02em; margin: .4rem 0 1.4rem; color: var(--head); }
+
+.grid { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); }
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 1.6rem; box-shadow: 0 4px 16px rgba(11,61,44,.07); }
+.panel h3 { font-size: 1.1rem; color: var(--head); margin-bottom: .4rem; }
+.panel h4 { font-size: 1rem; color: var(--head); margin-bottom: .3rem; }
+.hint { color: var(--muted); font-size: .9rem; margin-bottom: .8rem; }
+.muted { color: var(--muted); font-size: .85rem; }
+
+.timeline { position: relative; padding-left: 2.2rem; max-width: 720px; }
+.timeline::before { content: ""; position: absolute; left: 14px; top: 8px; bottom: 8px; width: 3px; border-radius: 3px; background: linear-gradient(var(--lime), var(--green), var(--teal)); }
+.step { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 1.1rem 1.3rem; margin-bottom: 1.1rem; box-shadow: 0 3px 12px rgba(11,61,44,.06); }
+.step::before { content: attr(data-n); position: absolute; left: -2.2rem; top: 1rem; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--green); color: #fff; font-weight: 800; font-size: .85rem; box-shadow: 0 0 0 4px var(--bg); }
+.step h4 { font-size: 1.02rem; color: var(--head); margin-bottom: .25rem; }
+.step p { font-size: .92rem; color: var(--muted); }
+.step .fact { margin-top: .5rem; font-size: .85rem; font-weight: 700; color: var(--green); }
+
+label { display: block; margin: 12px 0 6px; font-size: .9rem; font-weight: 600; color: var(--muted); }
+input, select { width: 100%; padding: .65rem .8rem; border-radius: 12px; font-size: .95rem; background: var(--input); border: 1.5px solid var(--line); color: var(--text); outline: none; }
+input:focus, select:focus { border-color: var(--green); }
+
+button { margin-top: 12px; width: 100%; padding: .7rem 1rem; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--green), var(--teal)); color: #fff; font-weight: 700; font-size: .95rem; cursor: pointer; }
+button:hover { filter: brightness(1.05); }
+button:disabled { background: #d1d5db; color: #6b7280; cursor: not-allowed; }
+button.small { width: auto; margin: 0; padding: .4rem .8rem; font-size: .85rem; }
+button.ghost { background: #e5e7eb; color: #0b3d2c; }
+
+.rate-row { display: flex; align-items: center; gap: .6rem; margin-bottom: .6rem; }
+.rate-row span { flex: 1; font-weight: 600; }
+.rate-row input { width: 100px; }
+.rate-row small { color: var(--muted); width: 60px; }
+
+.code-box { margin-top: 14px; padding: 16px; border-radius: 14px; background: var(--soft); border: 1.5px dashed var(--green); display: none; text-align: center; }
+.code-box.show { display: block; }
+.code { font-size: 1.8rem; font-weight: 800; letter-spacing: .15em; margin: 6px 0; color: var(--head); }
+#qr {
+     display: flex; justify-content: center; margin: 10px 0; 
+}
+#qr img, #qr canvas {
+     background: #fff; padding: 6px; border-radius: 10px; 
+}
+
+.products {
+     display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.1rem; 
+}
+.product {
+     border-radius: 20px; padding: 1.1rem; text-align: center; color: var(--head); display: flex; flex-direction: column; background: linear-gradient(160deg, var(--soft) 0%, var(--card) 70%); border: 1.5px solid #bef264; 
+}
+.product .img {
+     height: 130px; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #d9f99d, transparent 70%); border-radius: 14px; margin-bottom: .8rem; 
+}
+.product .img svg {
+     width: 120px; height: 96px; 
+}
+.product h4 {
+     font-size: 1.02rem;
+}
+.product .price { 
+color: var(--green); font-weight: 800; }
+.product button {
+     margin-top: auto; 
+}
+
+.msg {
+     margin-top: 10px;
+     font-size: .9rem;
+     color: var(--green); min-height: 18px; font-weight: 600;
+}
+.msg.error {
+     color: #b91c1c; 
+}
+
+table { 
+     width: 100%;
+     border-collapse: collapse;
+     font-size: .88rem;
+}
+td, th {
+     text-align: left;
+     padding: .5rem .3rem;
+     border-bottom: 1px solid var(--line);
+     vertical-align: middle;
+}
+th { 
+     color: var(--muted);
+     font-weight: 600;
+}
+.status { 
+     font-size: .8rem;
+     font-weight: 700;
+     padding: .2rem .6rem;
+     border-radius: 999px; 
+}
+.status.pending {
+     background: #fef3c7;
+     color: #92400e; 
+}
+.status.done {
+     background: #d9f99d;
+     color: #0b3d2c; 
+}
+.status.expired {
+     background: #fee2e2; 
+     color: #991b1b; 
+}
+
+.stats {
+     display: grid;
+     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+     gap: 1rem;
+     margin-bottom: 1.2rem; 
+}
+.stat { 
+     background: var(--card);
+     border: 1px solid var(--line);
+     border-radius: 18px;
+     padding: 1.2rem;
+     text-align: center; 
+}
+.stat b {
+     display: block;
+     font-size: 1.6rem;
+     color: var(--green); 
+}
+.chart-wrap { 
+     background: var(--card);
+     border: 1px solid var(--line);
+     border-radius: 20px; 
+     padding: 1.2rem;
+     max-width: 720px; 
+}
+
+.map-filters {
+     display: flex;
+     gap: .7rem;
+     flex-wrap: wrap;
+     margin-bottom: 1rem; 
+}
+.map-filters select {
+     flex: 1;
+     min-width: 200px;
+     max-width: 320px; 
+}
+#map {
+     height: 460px;
+     border-radius: 16px;
+     border: 1px solid var(--line);
+     margin-bottom: 1.2rem;
+     z-index: 0;
+     background: var(--soft); 
+}
+.map-error {
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     height: 100%;
+     color: var(--muted);
+     padding: 1rem;
+     text-align: center; 
+}
+.pcards {
+     display: grid;
+     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+     gap: 1rem; 
+}
+.pcard {
+     background: var(--card);
+     border: 1px solid var(--line);
+     border-radius: 16px;
+     padding: 1rem; 
+}
+.pcard a {
+     color: var(--green);
+     font-weight: 600;
+     margin-right: .8rem;
+     text-decoration: none; 
+}
+.no-punkt {
+     grid-column: 1 / -1;
+     color: var(--muted);
+      padding: .5rem 0;
+}
+
+.contact-links {
+     display: flex;
+     flex-direction: column;
+     gap: .7rem; 
+}
+.contact-links a {
+     display: flex;
+     justify-content: space-between;
+     padding: .8rem 1rem;
+     border-radius: 12px;
+     text-decoration: none;
+     color: var(--head);
+     background: var(--soft);
+     border: 1.5px solid var(--line);
+     font-weight: 600; 
+}
+.contact-links a small {
+     color: var(--muted);
+     font-weight: 500; 
+}
+
+dialog {
+     border: none;
+     border-radius: 20px;
+     padding: 1.5rem;
+     max-width: 380px;
+     width: 90%;
+     background: var(--card);
+     color: var(--text);
+ }
+dialog::backdrop {
+     background: rgba(0,0,0,.45); 
+}
+.dlg-actions {
+     display: flex;
+     gap: .6rem;
+     justify-content: flex-end;
+     margin-top: 1rem; 
+}
+
+footer {
+     padding: 2.2rem 0;
+     text-align: center;
+     font-size: .85rem;
+     color: #f0fff4;
+     background: var(--nav); 
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <span class="logo">🌱 EkoCoin</span>
+    <div class="links">
+      <a href="#info" data-i18n="nav_info"></a>
+      <a href="#waste" data-i18n="nav_waste"></a>
+      <a href="#shop" data-i18n="nav_shop"></a>
+      <a href="#punkt" data-i18n="nav_punkt"></a>
+      <a href="#map-sec" data-i18n="nav_map"></a>
+      <a href="#stats" data-i18n="nav_stats"></a>
+      <a href="#faq" data-i18n="nav_faq"></a>
+      <a href="#contact" data-i18n="nav_contact"></a>
+    </div>
+    <div class="tools">
+      <select id="langSelect" aria-label="Language">
+        <option value="uz">O'zbekcha</option>
+        <option value="cy">Ўзбекча</option>
+        <option value="ru">Русский</option>
+      </select>
+      <button id="themeBtn" class="ghost" data-i18n="theme_btn"></button>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="badge" data-i18n="badge"></span>
+    <h1 data-i18n="hero_title"></h1>
+    <p class="sub" data-i18n="hero_sub"></p>
+    <div class="balance" id="balance">0 coin</div>
+  </div>
+</header>
+
+<section id="info" class="wrap">
+  <p class="eyebrow" data-i18n="info_eyebrow"></p>
+  <h2 data-i18n="info_title"></h2>
+  <div class="timeline">
+    <div class="step" data-n="1"><h4 data-i18n="s1h"></h4><p data-i18n="s1p"></p><div class="fact" data-i18n="s1f"></div></div>
+    <div class="step" data-n="2"><h4 data-i18n="s2h"></h4><p data-i18n="s2p"></p><div class="fact" data-i18n="s2f"></div></div>
+    <div class="step" data-n="3"><h4 data-i18n="s3h"></h4><p data-i18n="s3p"></p><div class="fact" data-i18n="s3f"></div></div>
+    <div class="step" data-n="4"><h4 data-i18n="s4h"></h4><p data-i18n="s4p"></p><div class="fact" data-i18n="s4f"></div></div>
+  </div>
+</section>
+
+<section id="waste" class="wrap">
+  <p class="eyebrow" data-i18n="waste_eyebrow"></p>
+  <h2 data-i18n="waste_title"></h2>
+  <div class="grid">
+    <div class="panel">
+      <h3 data-i18n="form_title"></h3>
+      <p class="hint" data-i18n="form_hint"></p>
+      <label for="uname" data-i18n="f_name"></label>
+      <input id="uname" data-i18n-ph="ph_name">
+      <label for="phone" data-i18n="f_phone"></label>
+      <input id="phone" data-i18n-ph="ph_phone">
+      <label for="type" data-i18n="f_type"></label>
+      <select id="type"></select>
+      <label for="kg" data-i18n="f_kg"></label>
+      <input id="kg" type="number" min="0.1" step="0.1" value="1">
+      <button id="submitBtn" data-i18n="btn_submit"></button>
+      <div class="msg" id="wasteMsg"></div>
+
+      <div class="code-box" id="codeBox">
+        <div data-i18n="code_label"></div>
+        <div class="code" id="codeText"></div>
+        <div id="qr"></div>
+        <div class="muted" id="codeExp"></div>
+        <div class="muted" data-i18n="code_hint"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3 data-i18n="rates_title"></h3>
+      <p class="hint" data-i18n="rates_hint"></p>
+      <div id="rateInputs"></div>
+      <button id="saveRatesBtn" data-i18n="btn_rates"></button>
+      <div class="msg" id="ratesMsg"></div>
+    </div>
+  </div>
+</section>
+
+<section id="punkt" class="wrap">
+  <p class="eyebrow" data-i18n="punkt_eyebrow"></p>
+  <h2 data-i18n="punkt_title"></h2>
+  <div class="panel">
+    <p class="hint" data-i18n="punkt_hint"></p>
+    <table>
+      <thead><tr>
+        <th data-i18n="th_code"></th><th data-i18n="th_name"></th><th data-i18n="th_phone"></th>
+        <th data-i18n="th_waste"></th><th data-i18n="th_status"></th><th></th>
+      </tr></thead>
+      <tbody id="submissions"></tbody>
+    </table>
+    <div class="msg" id="punktMsg"></div>
+  </div>
+</section>
+
+<section id="map-sec" class="wrap">
+  <p class="eyebrow" data-i18n="nav_map"></p>
+  <h2 data-i18n="map_title"></h2>
+  <div class="map-filters">
+    <select id="regionFilter" aria-label="Viloyat"></select>
+    <select id="districtFilter" aria-label="Tuman"></select>
+  </div>
+  <div id="map"></div>
+  <div class="pcards" id="punktList"></div>
+</section>
+
+<section id="stats" class="wrap">
+  <p class="eyebrow" data-i18n="stats_eyebrow"></p>
+  <h2 data-i18n="stats_title"></h2>
+  <div class="stats">
+    <div class="stat"><span class="muted" data-i18n="stat_kg"></span><b id="statKg">0 kg</b></div>
+    <div class="stat"><span class="muted" data-i18n="stat_count"></span><b id="statCount">0</b></div>
+    <div class="stat"><span class="muted" data-i18n="stat_co2"></span><b id="statCo2">0 kg</b></div>
+  </div>
+  <div class="chart-wrap">
+    <p class="muted" data-i18n="stat_chart"></p>
+    <canvas id="chart" height="160"></canvas>
+  </div>
+  <p class="muted" style="margin-top:.8rem" data-i18n="stat_note"></p>
+</section>
+
+<section id="shop" class="wrap">
+  <p class="eyebrow" data-i18n="shop_eyebrow"></p>
+  <h2 data-i18n="shop_title"></h2>
+  <div class="panel">
+    <div class="products" id="catalog"></div>
+    <div class="msg" id="redeemMsg"></div>
+  </div>
+</section>
+
+<section id="faq" class="wrap lite">
+  <p class="eyebrow">FAQ</p>
+  <h2 data-i18n="faq_title"></h2>
+  <div class="grid">
+    <div class="panel"><h4 data-i18n="faq_q1"></h4><p class="hint" data-i18n="faq_a1"></p></div>
+    <div class="panel"><h4 data-i18n="faq_q2"></h4><p class="hint" data-i18n="faq_a2"></p></div>
+    <div class="panel"><h4 data-i18n="faq_q3"></h4><p class="hint" data-i18n="faq_a3"></p></div>
+  </div>
+</section>
+
+<section id="contact" class="wrap lite">
+  <div class="grid">
+    <div class="panel">
+      <h3 data-i18n="contact_title"></h3>
+      <p class="hint" data-i18n="contact_hint"></p>
+      <div class="contact-links">
+        <a href="tel:+998900000000">Telefon <small>+998 90 000 00 00</small></a>
+        <a href="https://t.me/username">Telegram <small>@username</small></a>
+        <a href="mailto:info@example.com">Email <small>info@example.com</small></a>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3 data-i18n="history_title"></h3>
+      <p class="hint" data-i18n="history_hint"></p>
+      <table>
+        <thead><tr><th data-i18n="th_date"></th><th data-i18n="th_action2"></th><th data-i18n="th_coin"></th></tr></thead>
+        <tbody id="history"></tbody>
+      </table>
+      <button id="exportBtn" class="ghost" data-i18n="btn_export"></button>
+    </div>
+  </div>
+</section>
+
+<footer data-i18n="footer"></footer>
+
+<dialog id="confirmDlg">
+  <h3 data-i18n="confirm_title"></h3>
+  <p class="hint" id="confirmText"></p>
+  <div class="dlg-actions">
+    <button class="small ghost" id="dlgCancel" data-i18n="btn_cancel"></button>
+    <button class="small" id="dlgOk" data-i18n="btn_ok"></button>
+  </div>
+</dialog>
+
+<script>
+// ================= Sozlamalar =================
+const DAY = 24 * 60 * 60 * 1000;
+const KEY = 'ekocoin_eco_v4';
+const CO2 = { plastic: 1.5, paper: 0.9, metal: 2.5, glass: 0.3 }; // taxminiy kg CO₂ / kg
+const UZ_CENTER = [41.38, 64.58];
+const UZ_ZOOM = 6;
+
+const CATALOG = [
+  { id: 'airpods', price: 8000, svg: `<svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg"><rect x="28" y="30" width="64" height="44" rx="12" fill="#ffffff" stroke="#0b3d2c" stroke-width="2"/><line x1="60" y1="30" x2="60" y2="74" stroke="#1f8a4c" stroke-width="1.5"/><rect x="40" y="18" width="10" height="28" rx="5" fill="#ffffff" stroke="#0b3d2c" stroke-width="2"/><rect x="70" y="18" width="10" height="28" rx="5" fill="#ffffff" stroke="#0b3d2c" stroke-width="2"/></svg>` },
+  { id: 'phone', price: 30000, svg: `<svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg"><rect x="42" y="8" width="36" height="74" rx="7" fill="#0b3d2c"/><rect x="46" y="14" width="28" height="58" rx="3" fill="#14b8a6"/><circle cx="60" cy="78" r="3" fill="#a3e635"/></svg>` },
+  { id: 'laptop', price: 50000, svg: `<svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg"><rect x="26" y="12" width="68" height="48" rx="4" fill="#0b3d2c"/><rect x="30" y="16" width="60" height="40" rx="2" fill="#a3e635"/><path d="M14 62 H106 L100 72 H20 Z" fill="#1f8a4c"/><rect x="50" y="64" width="20" height="3" rx="1" fill="#0b3d2c"/></svg>` }
+];
+
+// Viloyatlar va ularning tumanlari (ro'yxatni tekshirib chiqing)
+const REGIONS = {
+  'Toshkent shahri': ['Bektemir', 'Chilonzor', 'Mirobod', "Mirzo Ulug'bek", 'Olmazor', 'Sergeli', 'Shayxontohur', 'Uchtepa', 'Yakkasaroy', 'Yashnobod', 'Yunusobod'],
+  'Toshkent viloyati': ['Angren shahri', 'Bekobod', "Bo'ka", "Bo'stonliq", 'Chinoz', 'Chirchiq shahri', 'Nurafshon shahri', 'Ohangaron', 'Olmaliq shahri', "Oqqo'rg'on", 'Parkent', 'Piskent', 'Qibray', "Quyi Chirchiq", 'Toshkent tumani', "O'rta Chirchiq", 'Yangiyo\'l', "Yuqori Chirchiq", 'Zangiota'],
+  'Andijon': ['Andijon shahri', 'Asaka', 'Baliqchi', "Bo'z", 'Buloqboshi', 'Izboskan', 'Jalaquduq', 'Marhamat', "Oltinko'l", 'Paxtaobod', "Qo'rg'ontepa", 'Shahrixon', "Ulug'nor", "Xo'jaobod"],
+  'Buxoro': ['Buxoro shahri', 'Buxoro tumani', 'Vobkent', "G'ijduvon", 'Jondor', 'Kogon', 'Olot', 'Peshku', 'Qorako\'l', 'Qorovulbozor', 'Romitan', 'Shofirkon'],
+  "Farg'ona": ["Farg'ona shahri", "Qo'qon shahri", "Marg'ilon shahri", 'Bag\'dod', 'Beshariq', 'Buvayda', "Dang'ara", 'Furqat', 'Oltiariq', 'Qo\'shtepa', 'Quva', 'Rishton', 'Toshloq', "O'zbekiston", 'Uchko\'prik', 'Yozyovon'],
+  'Jizzax': ['Jizzax shahri', 'Arnasoy', 'Baxmal', "Do'stlik", 'Forish', "G'allaorol", 'Mirzacho\'l', 'Paxtakor', 'Sharof Rashidov', 'Yangiobod', 'Zafarobod', 'Zarbdor', 'Zomin'],
+  'Xorazm': ['Urganch shahri', 'Xiva shahri', "Bog'ot", 'Gurlan', 'Hazorasp', "Qo'shko'pir", 'Shovot', 'Tuproqqal\'a', 'Urganch tumani', 'Xonqa', 'Yangiariq', 'Yangibozor'],
+  'Namangan': ['Namangan shahri', 'Chortoq', 'Chust', 'Kosonsoy', 'Mingbuloq', 'Namangan tumani', 'Norin', 'Pop', "To'raqo'rg'on", "Uchqo'rg'on", "Yangiqo'rg'on"],
+  'Navoiy': ['Navoiy shahri', 'Zarafshon shahri', 'Karmana', 'Konimex', 'Navbahor', 'Nurota', 'Qiziltepa', 'Tomdi', 'Uchquduq', 'Xatirchi'],
+  'Qashqadaryo': ['Qarshi shahri', 'Chiroqchi', 'Dehqonobod', "G'uzor", 'Kasbi', 'Kitob', 'Koson', 'Mirishkor', 'Muborak', 'Nishon', 'Qamashi', 'Shahrisabz', "Yakkabog'"],
+  'Samarqand': ['Samarqand shahri', "Kattaqo'rg'on shahri", 'Bulung\'ur', 'Ishtixon', 'Jomboy', 'Narpay', 'Nurobod', 'Oqdaryo', 'Pastdarg\'om', 'Paxtachi', 'Payariq', 'Qo\'shrabot', 'Samarqand tumani', 'Toyloq', 'Urgut'],
+  'Sirdaryo': ['Guliston shahri', 'Shirin shahri', 'Yangiyer shahri', 'Boyovut', 'Guliston tumani', 'Mirzaobod', 'Oqoltin', 'Sardoba', 'Sayxunobod', 'Sirdaryo tumani', 'Xovos'],
+  'Surxondaryo': ['Termiz shahri', 'Angor', 'Bandixon', 'Boysun', 'Denov', "Jarqo'rg'on", 'Muzrabot', 'Oltinsoy', 'Qiziriq', "Qumqo'rg'on", 'Sariosiyo', 'Sherobod', "Sho'rchi", 'Uzun'],
+  "Qoraqalpog'iston": ['Nukus shahri', 'Amudaryo', 'Beruniy', 'Chimboy', "Ellikqal'a", 'Kegeyli', "Qo'ng'irot", "Qorao'zak", 'Qanliko\'l', "Mo'ynoq", 'Nukus tumani', 'Shumanay', 'Taxiatosh', 'Taxtako\'pir', "To'rtko'l", "Xo'jayli", "Bo'zatov"]
+};
+
+// Punktlar: haqiqiy ma'lumotlar bilan almashtiring. district REGIONS dagi nom bilan bir xil bo'lishi kerak.
+const PUNKTS = [
+  { region: 'Toshkent shahri', district: 'Chilonzor', name: 'EkoCoin punkt — Chilonzor', addr: 'Chilonzor tumani', hours: '09:00 – 18:00', tel: '+998 90 000 00 01', lat: 41.2856, lng: 69.2043 },
+  { region: 'Toshkent shahri', district: 'Yunusobod', name: 'EkoCoin punkt — Yunusobod', addr: 'Yunusobod tumani', hours: '09:00 – 18:00', tel: '+998 90 000 00 02', lat: 41.3646, lng: 69.2896 },
+  { region: 'Toshkent shahri', district: 'Yakkasaroy', name: 'EkoCoin punkt — Yakkasaroy', addr: 'Yakkasaroy tumani', hours: '09:00 – 18:00', tel: '+998 90 000 00 18', lat: 41.2930, lng: 69.2320 },
+  { region: 'Toshkent shahri', district: "Mirzo Ulug'bek", name: "EkoCoin punkt — Mirzo Ulug'bek", addr: "Mirzo Ulug'bek tumani", hours: '09:00 – 18:00', tel: '+998 90 000 00 19', lat: 41.3380, lng: 69.3340 },
+  { region: 'Toshkent viloyati', district: 'Chirchiq shahri', name: 'EkoCoin punkt — Chirchiq', addr: 'Chirchiq shahri', hours: '09:00 – 18:00', tel: '+998 90 000 00 03', lat: 41.4689, lng: 69.5822 },
+  { region: 'Toshkent viloyati', district: 'Angren shahri', name: 'EkoCoin punkt — Angren', addr: 'Angren shahri', hours: '09:00 – 18:00', tel: '+998 90 000 00 04', lat: 41.0167, lng: 70.1436 },
+  { region: 'Samarqand', district: 'Samarqand shahri', name: 'EkoCoin punkt — Samarqand', addr: 'Samarqand shahri', hours: '09:00 – 18:00', tel: '+998 90 000 00 05', lat: 39.6542, lng: 66.9597 },
+  { region: 'Samarqand', district: "Kattaqo'rg'on shahri", name: "EkoCoin punkt — Kattaqo'rg'on", addr: "Kattaqo'rg'on shahri", hours: '09:00 – 18:00', tel: '+998 90 000 00 20', lat: 39.8950, lng: 66.2580 },
+  { region: 'Buxoro', district: 'Buxoro shahri', name: 'EkoCoin punkt — Buxoro', addr: 'Buxoro shahri', hours: '09:00 – 18:00', tel: '+998 90 000 00 06', lat: 39.7747, lng: 64.4286 },
+  { region: 'Navoiy', district: 'Navoiy shahri', name: 'EkoCoin punkt — Navoiy', addr: 'Navoiy shahri', hours: '09:00 – 18:00', tel: '+998 90 000 00 07', lat: 40.1030, lng: 65.3686 },
+  { region: 'Qashqadaryo', district: 'Qarshi shahri', name: 'EkoCoin punkt — Qarshi', addr: 'Qarshi shahri', hours: '09:00 – 18:00', tel: '+998 90 000 00 08', lat: 38.8606, lng: 65.7887 },
+  { region: 'Surxondaryo', district: 'Termiz shahri', name: 'EkoCoin punkt — Termiz', addr: 'Termiz shahri', hours: '09:00 – 18:00', tel: '+998 90 000 00 09', lat: 37.2242, lng: 67.2783 },
+  { region: 'Jizzax', district: 'Jizzax shahri', name: 'EkoCoin punkt — Jizzax', addr: 'Jizzax shahri', hours: '09:00 – 18:00', tel: '+998 90 000 00 10', lat: 40.1158, lng: 67.8422 },
+  { region: 'Sirdaryo', district: 'Guliston shahri', name: 'EkoCoin punkt — Guliston', addr: 'Guliston shahri', hours: '09:00 – 18:00', tel: '+998 90 000 00 11', lat: 40.4897, lng: 68.7842 },
+  { region: "Farg'ona", district: "Farg'ona shahri", name: "EkoCoin punkt — Farg'ona", addr: "Farg'ona shahri", hours: '09:00 – 18:00', tel: '+998 90 000 00 12', lat: 40.3864, lng: 71.7864 },
+  { region: "Farg'ona", district: "Qo'qon shahri", name: "EkoCoin punkt — Qo'qon", addr: "Qo'qon shahri", hours: '09:00 – 18:00', tel: '+998 90 000 00 13', lat: 40.5286, lng: 70.9425 },
+  { region: 'Namangan', district: 'Namangan shahri', name: 'EkoCoin punkt — Namangan', addr: 'Namangan shahri', hours: '09:00 – 18:00', tel: '+998 90 000 00 14', lat: 40.9983, lng: 71.6726 },
+  { region: 'Andijon', district: 'Andijon shahri', name: 'EkoCoin punkt — Andijon', addr: 'Andijon shahri', hours: '09:00 – 18:00', tel: '+998 90 000 00 15', lat: 40.7821, lng: 72.3442 },
+  { region: 'Xorazm', district: 'Urganch shahri', name: 'EkoCoin punkt — Urganch', addr: 'Urganch shahri', hours: '09:00 – 18:00', tel: '+998 90 000 00 16', lat: 41.5500, lng: 60.6333 },
+  { region: "Qoraqalpog'iston", district: 'Nukus shahri', name: "EkoCoin punkt — Nukus", addr: 'Nukus shahri', hours: '09:00 – 18:00', tel: '+998 90 000 00 17', lat: 42.4731, lng: 59.6103 }
+];
+
+const TYPE_IDS = ['plastic', 'paper', 'metal', 'glass'];
+const RATE_DEFAULTS = { plastic: 10, paper: 5, metal: 20, glass: 3 };
+
+// ================= Tarjimalar =================
+const T = {
+  uz: {
+    badge: 'Ekologik platforma', hero_title: 'Chiqindini topshiring, coin oling',
+    hero_sub: "Topshirgandan so'ng berilgan kod bilan punktga murojaat qiling. Punkt tasdiqlagach, coin hisobingizga tushadi.",
+    nav_info: 'Axborot', nav_waste: 'Topshirish', nav_shop: 'Sotuv', nav_punkt: 'Punkt paneli', nav_map: 'Punktlar', nav_stats: 'Statistika', nav_faq: 'Savol-javob', nav_contact: "Bog'lanish",
+    theme_btn: 'Rejim', footer: '© 2026 EkoCoin · Tabiat uchun',
+    info_eyebrow: 'Axborot', info_title: "Chiqindini to'g'ri topshirish bosqichlari",
+    s1h: 'Saralang', s1p: "Plastik, qog'oz, metall va shishani alohida idishlarga ajrating. Aralash chiqindi qayta ishlanishni qiyinlashtiradi.", s1f: 'Saralangan chiqindi qayta ishlash narxini ancha pasaytiradi.',
+    s2h: 'Tozalang va quriting', s2p: "Idishlarni yuvib, quriting. Yog' va ovqat qoldig'i bor chiqindi ko'p hollarda qabul qilinmaydi.", s2f: 'Toza chiqindi qayta ishlash jarayonini tezlashtiradi.',
+    s3h: 'Hajmini kamaytiring', s3p: 'Plastik idishlarni va metall bankalarni bosib yassilang. Qopqoq va yorliqlarni olib tashlang.', s3f: 'Yassilangan idish kam joy egallaydi va tashish arzonga tushadi.',
+    s4h: 'Punktga topshiring', s4p: "Ariza yuboring, kodni oling va punkt xodimiga ayting. Tasdiqdan keyin coin hisobingizga tushadi.", s4f: "Har bir topshirish tabiatni asrashga hissa qo'shadi.",
+    waste_eyebrow: 'Topshirish', waste_title: 'Chiqindi topshirish',
+    form_title: '1. Topshirish arizasi', form_hint: 'Ism va telefon punkt sizni topishi uchun kerak.',
+    f_name: 'Ism familiya', ph_name: 'Masalan: Ali Valiyev', f_phone: 'Telefon raqam', ph_phone: '+998 90 123 45 67',
+    f_type: 'Chiqindi turi', f_kg: "Og'irligi (kg)", btn_submit: 'Ariza yuborish',
+    code_label: 'Sizning topshirish kodingiz:', code_hint: 'Shu kodni punkt xodimiga ayting yoki QR kodni ko‘rsating.', code_expires: 'Amal qilish muddati: %s',
+    submitted: 'Ariza yuborildi. Taxminiy miqdor: %s coin.', err_name: 'Ism familiyangizni kiriting.', err_phone: "To'g'ri telefon raqam kiriting.", err_kg: "Og'irlikni to'g'ri kiriting.",
+    rates_title: 'Coin kurslari', rates_hint: "1 kg chiqindi uchun coin miqdori. O'zgartirish faqat punkt uchun.", btn_rates: 'Kurslarni saqlash',
+    rates_ok: 'Kurslar saqlandi.', rates_bad: "Kurslar 0 yoki undan katta bo'lishi kerak.",
+    punkt_eyebrow: 'Punkt uchun', punkt_title: 'Punkt paneli',
+    punkt_hint: "Mijoz kodini aytganda, ro'yxatdan topib \"Tasdiqlash\" tugmasini bosing. Coin faqat tasdiqlangandan keyin qo'shiladi.",
+    th_code: 'Kod', th_name: 'Ism', th_phone: 'Telefon', th_waste: 'Chiqindi', th_status: 'Holat', th_date: 'Sana', th_action2: 'Amal', th_coin: 'Coin',
+    st_pending: 'Kutilmoqda', st_done: 'Tasdiqlangan', st_expired: 'Muddati tugagan', btn_confirm: 'Tasdiqlash',
+    no_sub: "Hozircha topshirishlar yo'q", confirm_title: 'Tasdiqlashni tasdiqlang', confirm_text: '%s — %s kg %s (%s coin). Tasdiqlaysizmi?',
+    btn_ok: 'Ha, tasdiqlash', btn_cancel: 'Bekor qilish', confirmed: "%s tasdiqlandi, +%s coin qo'shildi.", expired_err: 'Kod muddati tugagan.', done_err: 'Bu kod allaqachon tasdiqlangan.',
+    map_title: 'Punktlar xaritasi', all_regions: 'Barcha viloyatlar', all_districts: 'Barcha tumanlar', hours: 'Ish vaqti', call: "Qo'ng'iroq", directions: "Yo'nalish",
+    no_punkt: "Bu hudud uchun hozircha punkt yo'q. Tez orada qo'shiladi.",
+    map_error: "Xarita yuklanmadi. Internet ulanishini tekshiring.",
+    stats_eyebrow: 'Statistika', stats_title: 'Sizning ekologik hissangiz', stat_kg: 'Topshirilgan chiqindi', stat_count: 'Tasdiqlangan topshirishlar', stat_co2: 'Tejalgan CO₂ (taxminiy)',
+    stat_chart: 'Turlar bo‘yicha (kg)', stat_note: 'CO₂ hisobi taxminiy koeffitsiyentlar bilan hisoblanadi.',
+    shop_eyebrow: "Sotuv bo'limi", shop_title: 'Mukofot katalogi', btn_redeem: 'Olish', btn_out: 'Zaxira tugagan', btn_low: 'Coin yetarli emas', stock_left: 'Qoldi: %s ta',
+    redeem_ok: "%s uchun so'rov qabul qilindi. Biz siz bilan bog'lanamiz.", redeem_action: "uchun so'rov",
+    faq_title: "Tez-tez so'raladigan savollar",
+    faq_q1: 'Coin qachon qo‘shiladi?', faq_a1: 'Punkt xodimi kodni tekshirib tasdiqlagandan keyin.',
+    faq_q2: 'Kod qancha vaqt amal qiladi?', faq_a2: "24 soat. Muddati tugagan kodlar tasdiqlanmaydi.",
+    faq_q3: 'Qaysi chiqindi qabul qilinmaydi?', faq_a3: "Yog' va ovqat qoldig'i bor idishlar, batareyka, kimyoviy moddalar va tibbiy chiqindi.",
+    contact_title: "Bog'lanish", contact_hint: 'Savollar, hamkorlik yoki mukofot haqida yozing.',
+    history_title: 'Tarix', history_hint: 'Sizning coin amallaringiz.', history_empty: "Hozircha amal yo'q", btn_export: 'CSV yuklab olish',
+    notify_title: 'EkoCoin', notify_body: '%s kodingiz 1 soatdan keyin muddati tugaydi.',
+    type_plastic: 'Plastik', type_paper: "Qog'oz", type_metal: 'Metall', type_glass: 'Shisha',
+    item_airpods: 'Quloqchin (AirPods)', item_phone: 'Telefon', item_laptop: 'Noutbuk'
+  },
+  cy: {
+    badge: 'Экологик платформа', hero_title: 'Чиқиндини топширинг, коин олинг',
+    hero_sub: 'Топширгандан сўнг берилган код билан пунктга мурожаат қилинг. Пункт тасдиқлагач, коин ҳисобингизга тушади.',
+    nav_info: 'Ахборот', nav_waste: 'Топшириш', nav_shop: 'Савдо', nav_punkt: 'Пункт панели', nav_map: 'Пунктлар', nav_stats: 'Статистика', nav_faq: 'Савол-жавоб', nav_contact: 'Боғланиш',
+    theme_btn: 'Режим', footer: '© 2026 EkoCoin · Табиат учун',
+    info_eyebrow: 'Ахборот', info_title: 'Чиқиндини тўғри топшириш босқичлари',
+    s1h: 'Сараланг', s1p: 'Пластик, қоғоз, металл ва шишани алоҳида идишларга ажратинг. Аралаш чиқинди қайта ишлашни қийинлаштиради.', s1f: 'Сараланган чиқинди қайта ишлаш нархини анча пасайтиради.',
+    s2h: 'Тозаланг ва қуритинг', s2p: 'Идишларни ювиб, қуритинг. Ёғ ва овқат қолдиғи бор чиқинди кўп ҳолларда қабул қилинмайди.', s2f: 'Тоза чиқинди қайта ишлаш жараёнини тезлаштиради.',
+    s3h: 'Ҳажмини камайтиринг', s3p: 'Пластик идишлар ва металл банкаларни босиб яссиланг. Қопқоқ ва ёрлиқларни олиб ташланг.', s3f: 'Яссиланган идиш кам жой эгаллайди ва ташиш арзонга тушади.',
+    s4h: 'Пунктга топширинг', s4p: 'Ариза юборинг, кодни олинг ва пункт ходимига айтинг. Тасдиқдан кейин коин ҳисобингизга тушади.', s4f: 'Ҳар бир топшириш табиатни асрашга ҳисса қўшади.',
+    waste_eyebrow: 'Топшириш', waste_title: 'Чиқинди топшириш',
+    form_title: '1. Топшириш аризаси', form_hint: 'Исм ва телефон пункт сизни топиши учун керак.',
+    f_name: 'Исм фамилия', ph_name: 'Масалан: Али Валиев', f_phone: 'Телефон рақам', ph_phone: '+998 90 123 45 67',
+    f_type: 'Чиқинди тури', f_kg: 'Оғирлиги (кг)', btn_submit: 'Ариза юбориш',
+    code_label: 'Сизнинг топшириш кодингиз:', code_hint: 'Шу кодни пункт ходимига айтинг ёки QR кодни кўрсатинг.', code_expires: 'Амал қилиш муддати: %s',
+    submitted: 'Ариза юборилди. Тахминий миқдор: %s коин.', err_name: 'Исм фамилиянгизни киритинг.', err_phone: 'Тўғри телефон рақам киритинг.', err_kg: 'Оғирликни тўғри киритинг.',
+    rates_title: 'Коин курслари', rates_hint: '1 кг чиқинди учун коин миқдори. Ўзгартириш фақат пункт учун.', btn_rates: 'Курсларни сақлаш',
+    rates_ok: 'Курслар сақланди.', rates_bad: 'Курслар 0 ёки ундан катта бўлиши керак.',
+    punkt_eyebrow: 'Пункт учун', punkt_title: 'Пункт панели',
+    punkt_hint: 'Мижоз кодини айтганда, рўйхатдан топиб "Тасдиқлаш" тугмасини босинг. Коин фақат тасдиқлангандан кейин қўшилади.',
+    th_code: 'Код', th_name: 'Исм', th_phone: 'Телефон', th_waste: 'Чиқинди', th_status: 'Ҳолат', th_date: 'Сана', th_action2: 'Амал', th_coin: 'Коин',
+    st_pending: 'Кутилмоқда', st_done: 'Тасдиқланган', st_expired: 'Муддати тугаган', btn_confirm: 'Тасдиқлаш',
+    no_sub: 'Ҳозирча топширишлар йўқ', confirm_title: 'Тасдиқлашни тасдиқланг', confirm_text: '%s — %s кг %s (%s коин). Тасдиқлайсизми?',
+    btn_ok: 'Ҳа, тасдиқлаш', btn_cancel: 'Бекор қилиш', confirmed: '%s тасдиқланди, +%s коин қўшилди.', expired_err: 'Код муддати тугаган.', done_err: 'Бу код аллақачон тасдиқланган.',
+    map_title: 'Пунктлар харитаси', all_regions: 'Барча вилоятлар', all_districts: 'Барча туманлар', hours: 'Иш вақти', call: 'Қўнғироқ', directions: 'Йўналиш',
+    no_punkt: 'Бу ҳудуд учун ҳозирча пункт йўқ. Тез орада қўшилади.',
+    map_error: 'Харита юкланмади. Интернет уланишини текширинг.',
+    stats_eyebrow: 'Статистика', stats_title: 'Сизнинг экологик ҳиссангиз', stat_kg: 'Топширилган чиқинди', stat_count: 'Тасдиқланган топширишлар', stat_co2: 'Тежалган CO₂ (тахминий)',
+    stat_chart: 'Турлар бўйича (кг)', stat_note: 'CO₂ ҳисоби тахминий коэффициентлар билан ҳисобланади.',
+    shop_eyebrow: 'Савдо бўлими', shop_title: 'Мукофот каталоги', btn_redeem: 'Олиш', btn_out: 'Захира тугаган', btn_low: 'Коин етарли эмас', stock_left: 'Қолди: %s та',
+    redeem_ok: '%s учун сўров қабул қилинди. Биз сиз билан боғланамиз.', redeem_action: 'учун сўров',
+    faq_title: 'Тез-тез сўраладиган саволлар',
+    faq_q1: 'Коин қачон қўшилади?', faq_a1: 'Пункт ходими кодни текшириб тасдиқлагандан кейин.',
+    faq_q2: 'Код қанча вақт амал қилади?', faq_a2: '24 соат. Муддати тугаган кодлар тасдиқланмайди.',
+    faq_q3: 'Қайси чиқинди қабул қилинмайди?', faq_a3: 'Ёғ ва овқат қолдиғи бор идишлар, батарейка, кимёвий моддалар ва тиббий чиқинди.',
+    contact_title: 'Боғланиш', contact_hint: 'Саволлар, ҳамкорлик ёки мукофот ҳақида ёзинг.',
+    history_title: 'Тарих', history_hint: 'Сизнинг коин амалларингиз.', history_empty: 'Ҳозирча амал йўқ', btn_export: 'CSV юклаб олиш',
+    notify_title: 'EkoCoin', notify_body: '%s кодингиз 1 соатдан кейин муддати тугайди.',
+    type_plastic: 'Пластик', type_paper: 'Қоғоз', type_metal: 'Металл', type_glass: 'Шиша',
+    item_airpods: 'Қулоқчин (AirPods)', item_phone: 'Телефон', item_laptop: 'Ноутбук'
+  },
+  ru: {
+    badge: 'Экологическая платформа', hero_title: 'Сдайте отходы, получите коины',
+    hero_sub: 'После сдачи обратитесь на пункт с полученным кодом. Когда пункт подтвердит, коины поступят на ваш счёт.',
+    nav_info: 'Информация', nav_waste: 'Сдача', nav_shop: 'Магазин', nav_punkt: 'Панель пункта', nav_map: 'Пункты', nav_stats: 'Статистика', nav_faq: 'Вопросы', nav_contact: 'Контакты',
+    theme_btn: 'Тема', footer: '© 2026 EkoCoin · Для природы',
+    info_eyebrow: 'Информация', info_title: 'Этапы правильной сдачи отходов',
+    s1h: 'Сортируйте', s1p: 'Разделите пластик, бумагу, металл и стекло по отдельным контейнерам. Смешанный мусор сложнее перерабатывать.', s1f: 'Сортированные отходы значительно снижают стоимость переработки.',
+    s2h: 'Очистите и высушите', s2p: 'Помойте и высушите упаковку. Отходы с остатками жира и еды часто не принимаются.', s2f: 'Чистые отходы ускоряют процесс переработки.',
+    s3h: 'Уменьшите объём', s3p: 'Сплющите пластиковые бутылки и металлические банки. Снимите крышки и этикетки.', s3f: 'Сплющенная тара занимает меньше места, а перевозка дешевле.',
+    s4h: 'Сдайте на пункт', s4p: 'Отправьте заявку, получите код и назовите его сотруднику пункта. После подтверждения коины поступят на счёт.', s4f: 'Каждая сдача вносит вклад в защиту природы.',
+    waste_eyebrow: 'Сдача', waste_title: 'Сдача отходов',
+    form_title: '1. Заявка на сдачу', form_hint: 'Имя и телефон нужны, чтобы пункт мог с вами связаться.',
+    f_name: 'Имя и фамилия', ph_name: 'Например: Али Валиев', f_phone: 'Номер телефона', ph_phone: '+998 90 123 45 67',
+    f_type: 'Тип отходов', f_kg: 'Вес (кг)', btn_submit: 'Отправить заявку',
+    code_label: 'Ваш код сдачи:', code_hint: 'Назовите этот код сотруднику пункта или покажите QR-код.', code_expires: 'Действует до: %s',
+    submitted: 'Заявка отправлена. Примерно: %s коинов.', err_name: 'Введите имя и фамилию.', err_phone: 'Введите корректный номер телефона.', err_kg: 'Введите корректный вес.',
+    rates_title: 'Курсы коинов', rates_hint: 'Количество коинов за 1 кг отходов. Изменять может только пункт.', btn_rates: 'Сохранить курсы',
+    rates_ok: 'Курсы сохранены.', rates_bad: 'Курсы должны быть 0 или больше.',
+    punkt_eyebrow: 'Для пункта', punkt_title: 'Панель пункта',
+    punkt_hint: 'Когда клиент назовёт код, найдите его в списке и нажмите «Подтвердить». Коины начисляются только после подтверждения.',
+    th_code: 'Код', th_name: 'Имя', th_phone: 'Телефон', th_waste: 'Отходы', th_status: 'Статус', th_date: 'Дата', th_action2: 'Действие', th_coin: 'Коины',
+    st_pending: 'Ожидает', st_done: 'Подтверждено', st_expired: 'Срок истёк', btn_confirm: 'Подтвердить',
+    no_sub: 'Заявок пока нет', confirm_title: 'Подтверждение', confirm_text: '%s — %s кг %s (%s коинов). Подтвердить?',
+    btn_ok: 'Да, подтвердить', btn_cancel: 'Отмена', confirmed: '%s подтверждён, начислено +%s коинов.', expired_err: 'Срок действия кода истёк.', done_err: 'Этот код уже подтверждён.',
+    map_title: 'Карта пунктов', all_regions: 'Все регионы', all_districts: 'Все районы', hours: 'Часы работы', call: 'Позвонить', directions: 'Маршрут',
+    no_punkt: 'Для этого района пока нет пунктов. Скоро добавим.',
+    map_error: 'Карта не загрузилась. Проверьте подключение к интернету.',
+    stats_eyebrow: 'Статистика', stats_title: 'Ваш экологический вклад', stat_kg: 'Сдано отходов', stat_count: 'Подтверждённых сдач', stat_co2: 'Сэкономлено CO₂ (примерно)',
+    stat_chart: 'По типам (кг)', stat_note: 'Расчёт CO₂ выполнен по приблизительным коэффициентам.',
+    shop_eyebrow: 'Магазин', shop_title: 'Каталог наград', btn_redeem: 'Получить', btn_out: 'Нет в наличии', btn_low: 'Недостаточно коинов', stock_left: 'Осталось: %s шт.',
+    redeem_ok: 'Заявка на «%s» принята. Мы свяжемся с вами.', redeem_action: 'заявка на получение',
+    faq_title: 'Частые вопросы',
+    faq_q1: 'Когда начисляются коины?', faq_a1: 'После проверки и подтверждения кода сотрудником пункта.',
+    faq_q2: 'Сколько действует код?', faq_a2: '24 часа. Код с истёкшим сроком не подтверждается.',
+    faq_q3: 'Какие отходы не принимаются?', faq_a3: 'Посуда с остатками жира и еды, батарейки, химикаты и медицинские отходы.',
+    contact_title: 'Контакты', contact_hint: 'Вопросы, сотрудничество или награды — пишите.',
+    history_title: 'История', history_hint: 'Ваши операции с коинами.', history_empty: 'Операций пока нет', btn_export: 'Скачать CSV',
+    notify_title: 'EkoCoin', notify_body: 'Срок действия кода %s истекает через 1 час.',
+    type_plastic: 'Пластик', type_paper: 'Бумага', type_metal: 'Металл', type_glass: 'Стекло',
+    item_airpods: 'Наушники (AirPods)', item_phone: 'Телефон', item_laptop: 'Ноутбук'
+  }
+};
+
+// ================= Holat =================
+const defaults = () => ({
+  balance: 0, rates: { ...RATE_DEFAULTS }, history: [], submissions: [],
+  stock: { airpods: 5, phone: 2, laptop: 1 }, lang: 'uz', theme: null, notified: {}
+});
+let state = defaults();
+let pendingCode = null;
+let map = null;
+let markers = [];
+let chart = null;
+
+function load() {
+  try {
+    const s = localStorage.getItem(KEY);
+    if (s) state = { ...defaults(), ...JSON.parse(s) };
+  } catch (e) {}
+}
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+}
+
+// ================= Yordamchilar =================
+const $ = id => document.getElementById(id);
+function el(tag, text, cls) {
+  const e = document.createElement(tag);
+  if (text !== undefined) e.textContent = text;
+  if (cls) e.className = cls;
+  return e;
+}
+function t(key) { return (T[state.lang] && T[state.lang][key]) || T.uz[key] || key; }
+function fmt(key, ...args) {
+  let s = t(key);
+  args.forEach(a => { s = s.replace('%s', String(a)); });
+  return s;
+}
+function typeName(k) { return t('type_' + k); }
+function loc() { return state.lang === 'ru' ? 'ru-RU' : 'uz-UZ'; }
+function setMsg(id, text, isError = false) {
+  const m = $(id);
+  m.textContent = text;
+  m.classList.toggle('error', isError);
+}
+function statusOf(s) {
+  if (s.status === 'done') return 'done';
+  return s.expiresAt < Date.now() ? 'expired' : 'pending';
+}
+function addHistory(action, coins) {
+  state.history.unshift({ date: Date.now(), action, coins });
+  state.history = state.history.slice(0, 50);
+}
+function makeCode() {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 0, O, 1, I yo'q
+  let code;
+  do {
+    const r = crypto.getRandomValues(new Uint8Array(6));
+    code = [...r].map(x => alphabet[x % alphabet.length]).join('');
+  } while (state.submissions.some(s => s.code === code));
+  return code;
+}
+
+// ================= Mavzu =================
+function applyTheme() {
+  const dark = state.theme ? state.theme === 'dark'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+}
+
+// ================= Tarjima qo'llash =================
+function applyI18n() {
+  document.documentElement.lang = state.lang === 'ru' ? 'ru' : 'uz';
+  document.querySelectorAll('[data-i18n]').forEach(e => { e.textContent = t(e.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(e => { e.placeholder = t(e.dataset.i18nPh); });
+  $('langSelect').value = state.lang;
+  renderRates();
+  renderAll();
+}
+
+// ================= Kurslar =================
+function renderRates() {
+  const select = $('type');
+  const prev = select.value;
+  select.innerHTML = '';
+  for (const k of TYPE_IDS) {
+    const o = el('option', `${typeName(k)} (1 kg = ${state.rates[k]} coin)`);
+    o.value = k;
+    select.appendChild(o);
+  }
+  if (prev) select.value = prev;
+
+  const box = $('rateInputs');
+  box.innerHTML = '';
+  for (const k of TYPE_IDS) {
+    const row = el('div', '', 'rate-row');
+    const inp = el('input');
+    inp.type = 'number'; inp.min = '0'; inp.step = '1';
+    inp.id = 'rate-' + k;
+    inp.value = state.rates[k];
+    row.append(el('span', typeName(k)), inp, el('small', 'coin/kg'));
+    box.appendChild(row);
+  }
+}
+
+function saveRates() {
+  const vals = {};
+  for (const k of TYPE_IDS) {
+    const v = Number($('rate-' + k).value);
+    if (isNaN(v) || v < 0 || v > 100000) return setMsg('ratesMsg', t('rates_bad'), true);
+    vals[k] = Math.round(v);
+  }
+  Object.assign(state.rates, vals);
+  save();
+  renderRates();
+  setMsg('ratesMsg', t('rates_ok'));
+}
+
+// ================= Topshirish =================
+function requestNotif() {
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+}
+
+function showCode(code, expiresAt) {
+  $('codeText').textContent = code;
+  $('qr').innerHTML = '';
+  if (window.QRCode) new QRCode($('qr'), { text: code, width: 140, height: 140 });
+  $('codeExp').textContent = fmt('code_expires', new Date(expiresAt).toLocaleString(loc()));
+  $('codeBox').classList.add('show');
+}
+
+function submitWaste() {
+  const name = $('uname').value.trim();
+  const phone = $('phone').value.replace(/[\s-]/g, '');
+  const type = $('type').value;
+  const kg = Number($('kg').value);
+
+  if (name.length < 3) return setMsg('wasteMsg', t('err_name'), true);
+  if (!/^\+?\d{9,15}$/.test(phone)) return setMsg('wasteMsg', t('err_phone'), true);
+  if (!(kg >= 0.1 && kg <= 1000)) return setMsg('wasteMsg', t('err_kg'), true);
+
+  const now = Date.now();
+  const code = makeCode();
+  const coins = Math.round(kg * state.rates[type]);
+  state.submissions.unshift({
+    code, name, phone, type, kg, coins, status: 'pending',
+    createdAt: now, expiresAt: now + DAY
+  });
+  save();
+  requestNotif();
+  showCode(code, now + DAY);
+  setMsg('wasteMsg', fmt('submitted', coins));
+  renderPunkt();
+  renderStats();
+}
+
+// ================= Punkt paneli =================
+function renderPunkt() {
+  const tb = $('submissions');
+  tb.innerHTML = '';
+  if (!state.submissions.length) {
+    const tr = el('tr'); const td = el('td', t('no_sub')); td.colSpan = 6;
+    tr.appendChild(td); tb.appendChild(tr);
+    return;
+  }
+  for (const s of state.submissions) {
+    const st = statusOf(s);
+    const tr = el('tr');
+
+    const codeTd = el('td'); codeTd.appendChild(el('b', s.code));
+    const statusTd = el('td');
+    statusTd.appendChild(el('span', t('st_' + st), 'status ' + st));
+    const actTd = el('td');
+    if (st === 'pending') {
+      const b = el('button', t('btn_confirm'), 'small');
+      b.addEventListener('click', () => openConfirm(s.code));
+      actTd.appendChild(b);
+    }
+
+    tr.append(codeTd, el('td', s.name), el('td', s.phone),
+      el('td', `${s.kg} kg ${typeName(s.type)} (${s.coins} coin)`), statusTd, actTd);
+    tb.appendChild(tr);
+  }
+}
+
+function openConfirm(code) {
+  const s = state.submissions.find(x => x.code === code);
+  if (!s) return;
+  pendingCode = code;
+  $('confirmText').textContent = fmt('confirm_text', `${s.name} · ${s.phone}`, s.kg, typeName(s.type), s.coins);
+  $('confirmDlg').showModal();
+}
+
+function confirmSubmission(code) {
+  const s = state.submissions.find(x => x.code === code);
+  if (!s) return;
+  const st = statusOf(s);
+  if (st === 'done') return setMsg('punktMsg', t('done_err'), true);
+  if (st === 'expired') return setMsg('punktMsg', t('expired_err'), true);
+
+  s.status = 'done';
+  state.balance += s.coins;
+  addHistory(`${s.kg} kg ${typeName(s.type)} (${s.code})`, s.coins);
+  save();
+  renderAll();
+  setMsg('punktMsg', fmt('confirmed', s.code, s.coins));
+}
+
+// ================= Xarita =================
+const GEO_KEY = 'ekocoin_geo_v1';
+let geoCache = {};
+try { geoCache = JSON.parse(localStorage.getItem(GEO_KEY) || '{}'); } catch (e) { geoCache = {}; }
+let geoChain = Promise.resolve();
+let areaMarker = null;
+
+// Joy nomini koordinataga aylantiradi. Natija keshlanadi, so'rovlar orasida 1.1 soniya kutiladi.
+function geocode(query) {
+  if (geoCache[query]) return Promise.resolve(geoCache[query]);
+  geoChain = geoChain
+    .then(() => new Promise(r => setTimeout(r, 1100)))
+    .then(async () => {
+      if (geoCache[query]) return geoCache[query];
+      try {
+        const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=uz&q='
+          + encodeURIComponent(query);
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data[0]) {
+          geoCache[query] = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+          localStorage.setItem(GEO_KEY, JSON.stringify(geoCache));
+          return geoCache[query];
+        }
+      } catch (e) {
+        console.error('Geokodlash xatosi:', e);
+      }
+      return null;
+    });
+  return geoChain;
+}
+
+// Tanlangan hudud markazini xaritada ko'rsatadi
+function showAreaOnMap(query, key, zoom, label) {
+  geocode(query).then(c => {
+    if (!c || !map) return;
+    // Foydalanuvchi tanlovini o'zgartirgan bo'lsa, eski natijani ko'rsatmaymiz
+    if (key !== $('regionFilter').value + '|' + $('districtFilter').value) return;
+    if (areaMarker) areaMarker.remove();
+    areaMarker = L.circleMarker([c.lat, c.lng], {
+      radius: 10, color: '#0b3d2c', weight: 2, fillColor: '#a3e635', fillOpacity: 0.6
+    }).addTo(map).bindPopup(label);
+    map.setView([c.lat, c.lng], zoom);
+  });
+}
+
+function initMap() {
+  if (map) return true;
+  if (!window.L) {
+    const box = $('map');
+    box.innerHTML = '';
+    box.appendChild(el('div', t('map_error'), 'map-error'));
+    console.error('Leaflet yuklanmadi. Internet yoki CDN ulanishini tekshiring.');
+    return false;
+  }
+  map = L.map('map', {
+    minZoom: 5,
+    maxBounds: [[36.5, 54.5], [46.5, 74.5]],
+    maxBoundsViscosity: 0.8
+  }).setView(UZ_CENTER, UZ_ZOOM);
+
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 19,
+    attribution: 'Tiles © Esri, OpenStreetMap contributors'
+  }).addTo(map);
+
+  setTimeout(() => map && map.invalidateSize(), 300);
+  return true;
+}
+
+// Viloyat va tuman ro'yxatlarini to'ldiradi
+function populateFilters() {
+  const regionSel = $('regionFilter');
+  const districtSel = $('districtFilter');
+  const region = regionSel.value;
+  const district = districtSel.value;
+
+  regionSel.innerHTML = '';
+  regionSel.appendChild(new Option(t('all_regions'), ''));
+  Object.keys(REGIONS).forEach(r => regionSel.appendChild(new Option(r, r)));
+  regionSel.value = region;
+
+  const districts = region
+    ? REGIONS[region]
+    : [...new Set(Object.values(REGIONS).flat())].sort((a, b) => a.localeCompare(b));
+
+  districtSel.innerHTML = '';
+  districtSel.appendChild(new Option(t('all_districts'), ''));
+  districts.forEach(d => districtSel.appendChild(new Option(d, d)));
+  districtSel.value = districts.includes(district) ? district : '';
+}
+
+function renderMapList() {
+  populateFilters();
+  if (!initMap()) {
+    $('punktList').innerHTML = '';
+    return;
+  }
+  map.invalidateSize();
+
+  const region = $('regionFilter').value;
+  const district = $('districtFilter').value;
+  const key = region + '|' + district;
+  const list = PUNKTS.filter(p =>
+    (!region || p.region === region) && (!district || p.district === district));
+
+  markers.forEach(m => m.remove());
+  markers = list.map(p =>
+    L.marker([p.lat, p.lng]).addTo(map).bindPopup(`<b>${p.name}</b><br>${p.addr}<br>${p.tel}`)
+  );
+  if (areaMarker) { areaMarker.remove(); areaMarker = null; }
+
+  if (markers.length) {
+    // Punkt bor bo'lsa, o'shalarga yaqinlashamiz
+    map.fitBounds(L.featureGroup(markers).getBounds(), {
+      maxZoom: district ? 12 : 10,
+      padding: [40, 40]
+    });
+  } else if (district) {
+    // Punkt yo'q, lekin tuman tanlangan: tuman markazini topib ko'rsatamiz
+    showAreaOnMap(`${district}, ${region || ''}, Uzbekistan`.replace(', ,', ','), key, 11, district);
+  } else if (region) {
+    // Viloyatda ham punkt yo'q bo'lsa, viloyat markazini ko'rsatamiz
+    showAreaOnMap(`${region}, Uzbekistan`, key, 9, region);
+  } else {
+    map.setView(UZ_CENTER, UZ_ZOOM);
+  }
+
+  const box = $('punktList');
+  box.innerHTML = '';
+  if (!list.length) {
+    box.appendChild(el('p', t('no_punkt'), 'no-punkt'));
+    return;
+  }
+  for (const p of list) {
+    const card = el('div', '', 'pcard');
+    card.append(
+      el('b', p.name),
+      el('div', `${p.region}, ${p.district}`, 'muted'),
+      el('div', `${t('hours')}: ${p.hours}`)
+    );
+    const links = el('div');
+    links.style.marginTop = '.5rem';
+    const tel = el('a', t('call'));
+    tel.href = 'tel:' + p.tel.replace(/\s/g, '');
+    const dir = el('a', t('directions'));
+    dir.href = `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
+    dir.target = '_blank';
+    dir.rel = 'noopener';
+    links.append(tel, dir);
+    card.appendChild(links);
+    box.appendChild(card);
+  }
+}
+
+// ================= Statistika =================
+function renderStats() {
+  const done = state.submissions.filter(s => s.status === 'done');
+  const kg = done.reduce((a, s) => a + s.kg, 0);
+  const co2 = done.reduce((a, s) => a + s.kg * CO2[s.type], 0);
+  $('statKg').textContent = kg.toFixed(1) + ' kg';
+  $('statCount').textContent = done.length;
+  $('statCo2').textContent = co2.toFixed(1) + ' kg';
+
+  if (!window.Chart) return;
+  const perType = TYPE_IDS.map(k => done.filter(s => s.type === k).reduce((a, s) => a + s.kg, 0));
+  if (!chart) {
+    chart = new Chart($('chart'), {
+      type: 'bar',
+      data: { labels: [], datasets: [{ data: [], backgroundColor: ['#1f8a4c', '#14b8a6', '#a3e635', '#0b3d2c'] }] },
+      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+  }
+  chart.data.labels = TYPE_IDS.map(typeName);
+  chart.data.datasets[0].data = perType;
+  chart.update();
+}
+
+// ================= Mukofot =================
+function renderShop() {
+  const box = $('catalog');
+  box.innerHTML = '';
+  for (const item of CATALOG) {
+    const left = state.stock[item.id] || 0;
+    const card = el('div', '', 'product');
+    const img = el('div', '', 'img');
+    img.innerHTML = item.svg; // faqat o'zimizning doimiy SVG
+    const btn = el('button', '');
+    if (left <= 0) {
+      btn.textContent = t('btn_out'); btn.disabled = true;
+    } else if (state.balance < item.price) {
+      btn.textContent = t('btn_low'); btn.disabled = true;
+    } else {
+      btn.textContent = t('btn_redeem');
+      btn.addEventListener('click', () => redeem(item.id));
+    }
+    card.append(img, el('h4', t('item_' + item.id)),
+      el('div', item.price.toLocaleString(loc()) + ' coin', 'price'),
+      el('div', fmt('stock_left', left), 'muted'), btn);
+    box.appendChild(card);
+  }
+}
+
+function redeem(id) {
+  const item = CATALOG.find(i => i.id === id);
+  if (!item || (state.stock[id] || 0) <= 0 || state.balance < item.price) return;
+  state.balance -= item.price;
+  state.stock[id]--;
+  addHistory(`${t('item_' + id)} ${t('redeem_action')}`, -item.price);
+  save();
+  renderAll();
+  setMsg('redeemMsg', fmt('redeem_ok', t('item_' + id)));
+}
+
+// ================= Tarix va eksport =================
+function renderHistory() {
+  const h = $('history');
+  h.innerHTML = '';
+  if (!state.history.length) {
+    const tr = el('tr'); const td = el('td', t('history_empty')); td.colSpan = 3;
+    tr.appendChild(td); h.appendChild(tr);
+    return;
+  }
+  for (const x of state.history) {
+    const tr = el('tr');
+    tr.append(
+      el('td', new Date(x.date).toLocaleString(loc())),
+      el('td', x.action),
+      el('td', (x.coins > 0 ? '+' : '') + x.coins)
+    );
+    h.appendChild(tr);
+  }
+}
+
+function exportCsv() {
+  const esc = v => `"${String(v).replace(/"/g, '""')}"`;
+  const rows = [['date', 'action', 'coins'].join(',')];
+  for (const h of state.history) {
+    rows.push([esc(new Date(h.date).toISOString()), esc(h.action), h.coins].join(','));
+  }
+  const blob = new Blob(['\uFEFF' + rows.join('\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ekocoin-tarix.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ================= Muddat eslatmasi =================
+function checkExpiring() {
+  const now = Date.now();
+  let changed = false;
+  for (const s of state.submissions) {
+    if (s.status !== 'pending' || state.notified[s.code]) continue;
+    const left = s.expiresAt - now;
+    if (left > 0 && left <= 60 * 60 * 1000) {
+      state.notified[s.code] = true;
+      changed = true;
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(t('notify_title'), { body: fmt('notify_body', s.code) });
+      }
+    }
+  }
+  if (changed) save();
+}
+
+// ================= Umumiy render =================
+function renderAll() {
+  $('balance').textContent = state.balance + ' coin';
+  renderShop();
+  renderPunkt();
+  renderStats();
+  renderHistory();
+  renderMapList();
+}
+
+// ================= Hodisalar =================
+$('submitBtn').addEventListener('click', submitWaste);
+$('saveRatesBtn').addEventListener('click', saveRates);
+$('exportBtn').addEventListener('click', exportCsv);
+$('regionFilter').addEventListener('change', () => {
+  $('districtFilter').value = '';
+  renderMapList();
+});
+$('districtFilter').addEventListener('change', () => {
+  // Viloyat tanlanmagan bo'lsa, tuman qaysi viloyatda ekanini topib qo'yamiz
+  const district = $('districtFilter').value;
+  if (district && !$('regionFilter').value) {
+    const found = Object.entries(REGIONS).find(([, list]) => list.includes(district));
+    if (found) $('regionFilter').value = found[0];
+  }
+  renderMapList();
+});
+$('dlgCancel').addEventListener('click', () => $('confirmDlg').close());
+$('dlgOk').addEventListener('click', () => {
+  $('confirmDlg').close();
+  if (pendingCode) confirmSubmission(pendingCode);
+  pendingCode = null;
+});
+$('langSelect').addEventListener('change', e => {
+  state.lang = e.target.value;
+  save();
+  applyI18n();
+});
+$('themeBtn').addEventListener('click', () => {
+  const cur = document.documentElement.dataset.theme;
+  state.theme = cur === 'dark' ? 'light' : 'dark';
+  save();
+  applyTheme();
+});
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  if (!state.theme) applyTheme();
+});
+window.addEventListener('resize', () => map && map.invalidateSize());
+
+// ================= Ishga tushirish =================
+load();
+applyTheme();
+applyI18n();
+checkExpiring();
+setInterval(checkExpiring, 60 * 1000);
+
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
